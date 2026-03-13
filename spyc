@@ -1,0 +1,1029 @@
+# import spacy
+
+# ## pip install spacy
+# ## python -m spacy download en_core_web_sm
+
+
+
+
+# nlp = spacy.load("en_core_web_sm")
+
+# DO_SUPPORT = {"VBP": "do", "VBZ": "does", "VBD": "did"}   # present(pl), present(3rd), past
+# MODALS = {"can", "could", "will", "would", "shall", "should", "may", "might", "must"}
+
+# def negate_minimally(text: str) -> str:
+#     doc = nlp(text.strip())
+
+#     # If already negated, return as-is (or you could "remove negation" if you want the opposite)
+#     if any(t.dep_ == "neg" or t.lower_ in {"not", "n't", "never"} for t in doc):
+#         return text
+
+#     root = next((t for t in doc if t.dep_ == "ROOT"), None)
+#     if root is None:
+#         return text
+
+#     tokens = [t.text for t in doc]
+    
+#     # Helper: insert word at token index (spaCy token.i aligns with tokens list)
+#     def insert_after(i, word):
+#         tokens.insert(i + 1, word)
+
+#     # 1) If there's an auxiliary/modal, insert "not" after it
+#     aux = next((t for t in root.children if t.dep_ in {"aux", "auxpass"}), None)
+
+#     # Root itself is AUX (common with "be": "She is happy.")
+#     if root.pos_ == "AUX":
+#         insert_after(root.i, "not")
+#         return detokenize(tokens)
+
+#     # Has auxiliary
+#     if aux is not None:
+#         # Special: can -> cannot (keeps it tight)
+#         if aux.lower_ == "can":
+#             tokens[aux.i] = "cannot"
+#             return detokenize(tokens)
+#         insert_after(aux.i, "not")
+#         return detokenize(tokens)
+
+#     # 2) Modal as ROOT (rare parse variants)
+#     if root.lower_ in MODALS:
+#         if root.lower_ == "can":
+#             tokens[root.i] = "cannot"
+#             return detokenize(tokens)
+#         insert_after(root.i, "not")
+#         return detokenize(tokens)
+
+#     # 3) No auxiliary: use do/does/did + base verb (lemma)
+#     tag = root.tag_  # VBZ/VBD/VBP etc.
+#     if tag in DO_SUPPORT:
+#         do_form = DO_SUPPORT[tag]
+#         tokens[root.i] = root.lemma_          # "eats" -> "eat", "went" -> "go"
+#         tokens.insert(root.i, do_form)
+#         tokens.insert(root.i + 1, "not")
+#         return detokenize(tokens)
+
+#     # Fallback: insert "not" before root (not perfect, but safe fallback)
+#     tokens.insert(root.i, "not")
+#     return detokenize(tokens)
+
+# def detokenize(tokens):
+#     # simple spacing fix for punctuation
+#     out = ""
+#     punct = {".", ",", "!", "?", ":", ";"}
+#     for tok in tokens:
+#         if tok in punct:
+#             out = out.rstrip() + tok + " "
+#         else:
+#             out += tok + " "
+#     return out.strip()
+
+
+
+
+# tests = [
+#     "The voltage of 230v single phase is acquired at high frequency (1MHz) and its under sampled to 1KHz. The noises in the 1 KHz signal is filtered using a lowpass filter. The magnitude of the signal if it’s within the specified boundary its termed valid signal and it’s used for further stages.",
+    
+# ]
+
+# for t in tests:
+#     print("x: ", t)
+#     print("x':", negate_minimally(t))
+#     print()
+
+# # --------------------------------------------------
+# # def simple_negate(sentence):
+# #     words = sentence.split()
+
+# #     # be verbs
+# #     be_verbs = ["is", "are", "am", "was", "were"]
+# #     modals = ["can", "will", "shall", "should", "may", "might", "must", "could", "would"]
+
+# #     for i, word in enumerate(words):
+# #         if word.lower() in be_verbs:
+# #             words.insert(i + 1, "not")
+# #             return " ".join(words)
+
+# #         if word.lower() in modals:
+# #             words.insert(i + 1, "not")
+# #             return " ".join(words)
+
+# #     # fallback: simple do-support (basic)
+# #     if words[0].lower() in ["he", "she", "it"]:
+# #         return words[0] + " does not " + " ".join(words[1:])
+# #     else:
+# #         return words[0] + " do not " + " ".join(words[1:])
+    
+    
+    
+# # # print(simple_negate("The voltage of 230v single phase is acquired at high frequency (1MHz) and its under sampled to 1KHz. The noises in the 1 KHz signal is filtered using a lowpass filter. The magnitude of the signal if it’s within the specified boundary its termed valid signal and it’s used for further stages."))
+
+
+
+# # # ## pip install           
+
+# # # import nltk
+# # # from nltk import word_tokenize, pos_tag
+# # # from nltk.stem import WordNetLemmatizer
+
+# # # nltk.download("punkt")
+# # # nltk.download("averaged_perceptron_tagger")
+# # # nltk.download("wordnet")
+
+# # # lemmatizer = WordNetLemmatizer()
+
+# # # BE_VERBS = {"is", "are", "am", "was", "were"}
+# # # MODALS = {"can", "could", "will", "would", "shall", "should", "may", "might", "must"}
+
+# # # def negate_sentence_minimal(x: str) -> str:
+# # #     t   okens = word_tokenize(x)
+
+# # #     # already negated
+# # #     if any(t.lower() in {"not", "n't", "never"} for t in tokens):
+# # #         return x
+
+# # #     tags = pos_tag(tokens)
+
+# # #     # 1) be verb or modal: insert "not" right after it (minimal)
+# # #     for i, (w, tag) in enumerate(tags):
+# # #         wl = w.lower()
+# # #         if wl in BE_VERBS or wl in MODALS:
+# # #             tokens.insert(i + 1, "not")
+# # #             return _detok(tokens)
+
+# # #     # 2) otherwise: find first main verb (VB, VBD, VBP, VBZ)
+# # #     verb_i = None
+# # #     verb_tag = None
+# # #     for i, (w, tag) in enumerate(tags):
+# # #         if tag in {"VB", "VBD", "VBP", "VBZ"}:
+# # #             verb_i = i
+# # #             verb_tag = tag
+# # #             break
+
+# # #     if verb_i is None:
+# # #         # can't find verb reliably, just return original
+# # #         return x
+
+# # #     # choose do/does/did
+# # #     if verb_tag == "VBD":
+# # #         aux = "did"
+# # #     elif verb_tag == "VBZ":
+# # #         aux = "does"
+# # #     else:
+# # #         aux = "do"
+
+# # #     # change verb to base form (eat, go, make...)
+# # #     base = lemmatizer.lemmatize(tokens[verb_i], "v")
+# # #     tokens[verb_i] = base
+
+# # #     # insert aux + not before verb
+# # #     tokens.insert(verb_i, aux)
+# # #     tokens.insert(verb_i + 1, "not")
+# # #     return _detok(tokens)
+
+# # # def _detok(tokens):
+# # #     # join tokens while handling punctuation spacing
+# # #     out = ""
+# # #     punct = {".", ",", "!", "?", ":", ";"}
+# # #     for t in tokens:
+# # #         if t in punct:
+# # #             out = out.rstrip() + t + " "
+# # #         else:
+# # #             out += t + " "
+# # #     return out.strip()
+
+
+
+# # # print(negate_sentence_minimal("Machine learning is powerful."))
+
+
+
+
+
+
+
+# # # import nltk
+# # # from nltk.tokenize import word_tokenize
+# # # from nltk import pos_tag
+
+# # # nltk.download('punkt')
+# # # nltk.download('averaged_perceptron_tagger')
+
+# # # def negate(sentence):
+# # #     tokens = word_tokenize(sentence)
+# # #     tags = pos_tag(tokens)
+
+# # #     be_verbs = ["is", "are", "am", "was", "were"]
+
+# # #     for i, word in enumerate(tokens):
+# # #         if word.lower() in be_verbs:
+# # #             tokens.insert(i+1, "not")
+# # #             return " ".join(tokens)
+
+# # #     return sentence
+
+# # # print(negate("She is happy."))
+
+
+# # # 0---------------------------------working with transformers ---------------------------------
+
+
+# # # import spacy
+
+# # # nlp = spacy.load("en_core_web_sm")
+
+# # # AUX_DO = {"VBP": "do", "VBZ": "does", "VBD": "did"}  # present(pl), present(3rd), past
+
+# # # NEG_WORDS = {"not", "n't", "never", "no"}
+
+# # # def detok(tokens):
+# # #     # simple detokenizer for punctuation
+# # #     punct = {".", ",", "!", "?", ":", ";"}
+# # #     out = ""
+# # #     for t in tokens:
+# # #         if t in punct:
+# # #             out = out.rstrip() + t + " "
+# # #         else:
+# # #             out += t + " "
+# # #     return out.strip()
+
+# # # def has_neg(token):
+# # #     # token has a negation child like "not"
+# # #     return any(child.dep_ == "neg" or child.lower_ in NEG_WORDS for child in token.children)
+
+# # # def negate_doc(text: str) -> str:
+# # #     doc = nlp(text)
+# # #     out_sentences = []
+
+# # #     for sent in doc.sents:
+# # #         sent_doc = nlp(sent.text)  # re-parse per sentence for clean indices
+# # #         tokens = [t.text for t in sent_doc]
+
+# # #         # Collect verbs to negate: ROOT and conjunct verbs (e.g., "acquired ... and under sampled ...")
+# # #         root = next((t for t in sent_doc if t.dep_ == "ROOT"), None)
+# # #         if root is None:
+# # #             out_sentences.append(sent.text)
+# # #             continue
+
+# # #         verbs = []
+# # #         if root.pos_ in {"VERB", "AUX"}:
+# # #             verbs.append(root)
+# # #         verbs.extend([t for t in sent_doc if t.dep_ == "conj" and t.pos_ in {"VERB", "AUX"}])
+
+# # #         # Work from right to left so insertions don't break later indices
+# # #         for v in sorted(verbs, key=lambda x: x.i, reverse=True):
+# # #             # If already negated at verb level, skip
+# # #             if has_neg(v) or v.lower_ in NEG_WORDS:
+# # #                 continue
+
+# # #             # If verb is AUX like "is/are/was" -> insert "not" after it
+# # #             if v.pos_ == "AUX":
+# # #                 tokens.insert(v.i + 1, "not")
+# # #                 continue
+
+# # #             # If verb has an auxiliary (is/are/has/will/can/etc.), insert "not" after aux
+# # #             aux = next((c for c in v.children if c.dep_ in {"aux", "auxpass"}), None)
+# # #             if aux is not None:
+# # #                 # special-case "can" -> "cannot" (optional)
+# # #                 if aux.lower_ == "can":
+# # #                     tokens[aux.i] = "cannot"
+# # #                 else:
+# # #                     tokens.insert(aux.i + 1, "not")
+# # #                 continue
+
+# # #             # Otherwise do-support: do/does/did + not + base verb
+# # #             tag = v.tag_  # VBZ/VBD/VBP
+# # #             if tag in AUX_DO:
+# # #                 do_form = AUX_DO[tag]
+# # #             else:
+# # #                 # fallback to "do"
+# # #                 do_form = "do"
+
+# # #             # Replace verb with lemma (base form)
+# # #             tokens[v.i] = v.lemma_
+# # #             # Insert do_form and not before verb
+# # #             tokens.insert(v.i, do_form)
+# # #             tokens.insert(v.i + 1, "not")
+
+# # #         out_sentences.append(detok(tokens))
+
+# # #     return " ".join(out_sentences)
+
+# # # # --- Example ---
+# # # x = ("The voltage of 230v single phase is acquired at high frequency (1MHz) and its under sampled to 1KHz. "
+# # #      "The noises in the 1 KHz signal is filtered using a lowpass filter. "
+# # #      "The magnitude of the signal if it’s within the specified boundary its termed valid signal and it’s used for further stages.")
+
+# # # # print(negate_doc(x))
+
+
+
+# # import spacy
+
+# # nlp = spacy.load("en_core_web_sm")
+
+# # BE = {"is","are","am","was","were"}
+# # MODALS = {"can","could","will","would","shall","should","may","might","must"}
+
+# # def negate_sentence(sent):
+
+# #     doc = nlp(sent)
+# #     tokens = [t.text for t in doc]
+
+# #     # already negated
+# #     if any(t.lower() in {"not","never","no"} for t in tokens):
+# #         return sent
+
+# #     for i,t in enumerate(doc):
+
+# #         # BE verbs
+# #         if t.text.lower() in BE:
+# #             tokens.insert(i+1,"not")
+# #             return " ".join(tokens)
+
+# #         # modal verbs
+# #         if t.text.lower() in MODALS:
+# #             tokens.insert(i+1,"not")
+# #             return " ".join(tokens)
+
+# #         # normal verb
+# #         if t.pos_ == "VERB":
+# #             if i == 0:
+# #                 continue
+
+# #             subj = doc[0].text.lower()
+
+# #             if subj in ["he","she","it"]:
+# #                 tokens.insert(i,"does")
+# #                 tokens.insert(i+1,"not")
+# #             else:
+# #                 tokens.insert(i,"do")
+# #                 tokens.insert(i+1,"not")
+
+# #             return " ".join(tokens)
+
+# #     return sent
+
+
+# # def negate_text(text):
+
+# #     doc = nlp(text)
+# #     result = []
+
+# #     for sent in doc.sents:
+# #         result.append(negate_sentence(sent.text))
+
+# #     return " ".join(result)
+
+
+# # text = """The voltage of 230v single phase is acquired at high frequency (1MHz)
+# # and its under sampled to 1KHz.
+# # The noises in the 1 KHz signal is filtered using a lowpass filter.
+# # The magnitude of the signal if it's within the specified boundary its termed valid signal
+# # and it's used for further stages."""
+
+# # # print(negate_text(text))
+
+
+# # ## pip install spacy language-tool-python
+# # ## pip install spacy language-tool-python
+ 
+ 
+ 
+# # import re
+# # import spacy
+# # import language_tool_python
+
+# # nlp = spacy.load("en_core_web_sm")
+
+# # NEG_WORDS = {"not", "n't", "never", "no"}
+# # MODAL_LEMMAS = {"can", "could", "will", "would", "shall", "should", "may", "might", "must"}
+# # BE_LEMMAS = {"be"}  # lemma for am/is/are/was/were
+
+# # DO_FOR_TAG = {"VBD": "did", "VBZ": "does", "VBP": "do"}  # past, 3rd-sing, present(plural)
+
+# # # Optional: initialize LanguageTool once (expensive to create repeatedly)
+# # tool = language_tool_python.LanguageTool("en-US")
+
+
+# # def normalize_text(text: str) -> str:
+# #     """Normalize apostrophes, whitespace, and common tokenization artifacts."""
+# #     text = text.replace("\u2019", "'").replace("\u2018", "'").replace("\u201c", '"').replace("\u201d", '"')
+# #     text = re.sub(r"\s+", " ", text).strip()
+# #     return text
+
+
+# # def grammar_fix(text: str) -> str:
+# #     """Rule-based grammar correction to improve parsing/negation accuracy."""
+# #     text = normalize_text(text)
+# #     # LanguageTool returns corrected text; deterministic rules
+# #     return tool.correct(text)
+
+
+# # def detokenize(tokens):
+# #     """Detokenize tokens with decent punctuation spacing."""
+# #     no_space_before = {".", ",", "!", "?", ":", ";", "%", ")", "]", "}"}
+# #     no_space_after = {"(", "[", "{"}
+
+# #     out = []
+# #     for tok in tokens:
+# #         if not out:
+# #             out.append(tok)
+# #             continue
+
+# #         if tok in no_space_before:
+# #             out[-1] = out[-1].rstrip() + tok
+# #         elif out[-1] in no_space_after:
+# #             out[-1] = out[-1] + tok
+# #         else:
+# #             out.append(" " + tok)
+
+# #     return "".join(out).strip()
+
+
+# # def token_has_negation(tok) -> bool:
+# #     """True if token is already negated (e.g., has child 'not'/'n't')"""
+# #     for child in tok.children:
+# #         if child.dep_ == "neg" or child.lower_ in NEG_WORDS:
+# #             return True
+# #     return False
+
+
+# # def find_negation_anchor(verb):
+# #     """
+# #     If verb has auxiliary (aux/auxpass), negate after aux.
+# #     If verb itself is AUX (e.g., 'is'), negate after it.
+# #     """
+# #     if verb.pos_ == "AUX":
+# #         return ("AFTER_TOKEN", verb)
+
+# #     aux = next((c for c in verb.children if c.dep_ in {"aux", "auxpass"}), None)
+# #     if aux is not None:
+# #         return ("AFTER_TOKEN", aux)
+
+# #     return (None, None)
+
+
+# # def should_skip_sentence(doc) -> bool:
+# #     """Skip if sentence already contains explicit negation words."""
+# #     return any(t.lower_ in NEG_WORDS for t in doc)
+
+
+# # def verbs_to_negate(doc):
+# #     """
+# #     Collect main predicate verbs:
+# #     - ROOT if it's VERB/AUX
+# #     - conjunct verbs linked to ROOT (handles '... acquired and under sampled ...')
+# #     """
+# #     root = next((t for t in doc if t.dep_ == "ROOT"), None)
+# #     if root is None:
+# #         return []
+
+# #     candidates = []
+# #     if root.pos_ in {"VERB", "AUX"}:
+# #         candidates.append(root)
+
+# #     # Add conjunct verbs (e.g., "acquired ... and undersampled ...")
+# #     for t in doc:
+# #         if t.dep_ == "conj" and t.pos_ in {"VERB", "AUX"}:
+# #             # Prefer verbs whose head is root or connected to root chain
+# #             candidates.append(t)
+
+# #     # Unique by index
+# #     seen = set()
+# #     uniq = []
+# #     for v in candidates:
+# #         if v.i not in seen:
+# #             uniq.append(v)
+# #             seen.add(v.i)
+
+# #     # Negate from right to left so insertions don't shift indices of earlier verbs
+# #     return sorted(uniq, key=lambda x: x.i, reverse=True)
+
+
+# # print(negate_text("""The voltage of 230v single phase is acquired at high frequency (1MHz) and its under sampled to 1KHz. The noises in the 1 KHz signal is filtered using a lowpass filter. The magnitude of the signal if it’s within the specified boundary its termed valid signal and it’s used for further stages."""))
+
+# # def negate_sentence_minimally(sentence: str, contractions: bool = False) -> str:
+# #     doc = nlp(sentence)
+# #     if not doc or doc.text.strip() == "":
+# #         return sentence
+
+# #     # If already negated, return as-is (you can change this if you want "double-negation")
+# #     if should_skip_sentence(doc):
+# #         return sentence
+
+# #     tokens = [t.text for t in doc]
+
+# #     for v in verbs_to_negate(doc):
+# #         if token_has_negation(v):
+# #             continue
+
+# #         # If it’s a BE verb or has an aux/modal -> insert "not" after that anchor
+# #         anchor_type, anchor_tok = find_negation_anchor(v)
+# #         if anchor_type == "AFTER_TOKEN":
+# #             # Special case: can -> cannot (keeps it close and standard)
+# #             if anchor_tok.lemma_.lower() == "can":
+# #                 tokens[anchor_tok.i] = "cannot"
+# #             else:
+# #                 tokens.insert(anchor_tok.i + 1, "not")
+# #             continue
+
+# #         # No aux: do-support for lexical verbs
+# #         if v.pos_ == "VERB":
+# #             tag = v.tag_
+# #             do_form = DO_FOR_TAG.get(tag, "do")
+
+# #             # Replace verb surface with lemma (base form): eats->eat, went->go
+# #             tokens[v.i] = v.lemma_
+
+# #             # Insert do_form + not before verb
+# #             tokens.insert(v.i, do_form)
+# #             tokens.insert(v.i + 1, "not")
+# #             continue
+
+# #     out = detokenize(tokens)
+
+# #     if contractions:
+# #         # Optional contractions (simple, safe ones)
+# #         out = re.sub(r"\bis not\b", "isn't", out, flags=re.IGNORECASE)
+# #         out = re.sub(r"\bare not\b", "aren't", out, flags=re.IGNORECASE)
+# #         out = re.sub(r"\bwas not\b", "wasn't", out, flags=re.IGNORECASE)
+# #         out = re.sub(r"\bwere not\b", "weren't", out, flags=re.IGNORECASE)
+# #         out = re.sub(r"\bdo not\b", "don't", out, flags=re.IGNORECASE)
+# #         out = re.sub(r"\bdoes not\b", "doesn't", out, flags=re.IGNORECASE)
+# #         out = re.sub(r"\bdid not\b", "didn't", out, flags=re.IGNORECASE)
+
+# #     return out
+
+
+# # def negate_text(text: str, fix_grammar: bool = True, contractions: bool = False) -> str:
+# #     """
+# #     Negate every sentence in a paragraph/multiline text.
+# #     - fix_grammar=True improves results on ungrammatical requirements text.
+# #     """
+# #     original = text
+# #     if fix_grammar:
+# #         try:
+# #             text = grammar_fix(text)
+# #         except Exception:
+# #             # If LanguageTool fails for any reason, fall back gracefully
+# #             text = normalize_text(original)
+
+# #     text = normalize_text(text)
+
+# #     doc = nlp(text)
+# #     negated_sents = []
+# #     for sent in doc.sents:
+# #         negated_sents.append(negate_sentence_minimally(sent.text, contractions=contractions))
+
+# #     return " ".join(negated_sents)
+
+
+
+# # req = """The voltage of 230v single phase is acquired at high frequency (1MHz) and its under sampled to 1KHz.
+# # The noises in the 1 KHz signal is filtered using a lowpass filter.
+# # The magnitude of the signal if it’s within the specified boundary its termed valid signal and it’s used for further stages."""
+
+# # # print(negate_text(req, fix_grammar=True, contractions=False))
+
+
+
+
+
+
+# # import spacy
+# # from negspacy.negation import Negex
+
+# # nlp = spacy.load("en_core_web_sm")
+# # nlp.add_pipe("negex")
+
+# # doc = nlp("She does not like apples")
+
+ 
+    
+    
+# # print(doc)
+
+
+
+"""
+Sentence Negation using spaCy
+==============================
+Install:
+    pip install spacy
+    python -m spacy download en_core_web_sm
+"""
+
+import spacy
+
+nlp = spacy.load("en_core_web_sm")
+
+# Auxiliary verb negation map
+AUX_TO_NEG = {
+    "is": "is not",     "am": "am not",     "are": "are not",
+    "was": "was not",   "were": "were not",
+    "has": "has not",   "have": "have not",  "had": "had not",
+    "can": "cannot",    "could": "could not",
+    "will": "will not", "would": "would not",
+    "may": "may not",   "might": "might not",
+    "should": "should not", "must": "must not",
+    "shall": "shall not",
+}
+
+# Negative contraction → affirmative
+NEG_TO_AFF = {
+    "isn't": "is",      "aren't": "are",    "wasn't": "was",
+    "weren't": "were",  "hasn't": "has",    "haven't": "have",
+    "hadn't": "had",    "can't": "can",     "cannot": "can",
+    "couldn't": "could","won't": "will",    "wouldn't": "would",
+    "shouldn't": "should", "mustn't": "must",
+    "don't": "do",      "doesn't": "does",  "didn't": "did",
+    "shan't": "shall",
+}
+
+
+def negate(sentence: str) -> str:
+    """Add negation to a positive sentence."""
+    doc = nlp(sentence)
+    tokens = [tok.text_with_ws for tok in doc]
+
+    for i, tok in enumerate(doc):
+        w = tok.text.lower()
+
+        # 1. shall → shall not  (MBD requirements)
+        if w == "shall":
+            next_tok = doc[i + 1].text.lower() if i + 1 < len(doc) else ""
+            if next_tok != "not":
+                tokens[i] = tok.text + " not"
+                return "".join(tokens).strip()
+
+        # 2. Auxiliary verb → aux + not
+        if w in AUX_TO_NEG:
+            next_tok = doc[i + 1].text.lower() if i + 1 < len(doc) else ""
+            if next_tok != "not":
+                tokens[i] = AUX_TO_NEG[w] + tok.whitespace_
+                return "".join(tokens).strip()
+
+        # 3. Main VERB with no aux → insert do/does/did before it
+        if tok.dep_ == "ROOT" and tok.pos_ == "VERB":
+            # pick correct helper
+            subj = [t for t in tok.lefts if t.dep_ in ("nsubj", "nsubjpass")]
+            helper = "do"
+            if subj:
+                s = subj[0]
+                if s.tag_ in ("NN", "NNP", "NNS", "NNPS", "PRP"):
+                    helper = "does" if s.tag_ in ("NN", "NNP") or s.text.lower() in ("he","she","it") else "do"
+            tokens[i] = helper + " not " + tok.text + tok.whitespace_
+            return "".join(tokens).strip()
+
+    return "Could not negate: " + sentence
+
+
+def affirm(sentence: str) -> str:
+    """Remove negation from a negative sentence."""
+    doc = nlp(sentence)
+    tokens = [tok.text_with_ws for tok in doc]
+
+    for i, tok in enumerate(doc):
+        w = tok.text.lower()
+
+        # 1. Negative contraction → positive
+        if w in NEG_TO_AFF:
+            tokens[i] = NEG_TO_AFF[w] + tok.whitespace_
+            return "".join(tokens).strip()
+
+        # 2. Remove standalone 'not' after aux
+        if w == "not" and i > 0:
+            prev = doc[i - 1].text.lower()
+            if prev in AUX_TO_NEG or prev in ("do", "does", "did", "shall"):
+                tokens[i] = tok.whitespace_  # collapse 'not' to just whitespace
+                return "".join(tokens).strip()
+
+        # 3. shall not → shall
+        if w == "shall":
+            if i + 1 < len(doc) and doc[i + 1].text.lower() == "not":
+                tokens[i + 1] = doc[i + 1].whitespace_
+                return "".join(tokens).strip()
+
+    return sentence  # already affirmative
+
+
+def convert(sentence: str, task: str = "negative") -> str:
+    """
+    task = 'negative'     → negate the sentence
+    task = 'affirmative'  → make it affirmative
+    """
+    if task == "negative":
+        return negate(sentence)
+    elif task == "affirmative":
+        return affirm(sentence)
+    else:
+        raise ValueError("task must be 'negative' or 'affirmative'")
+
+
+# ── Demo ─────────────────────────────────────────────────────────────
+if __name__ == "__main__":
+    examples = [
+        ("I will come today",                                        "negative"),
+        ("I will not come today",                                    "affirmative"),
+        ("She is happy",                                             "negative"),
+        ("They do not play cricket",                                 "affirmative"),
+        ("He can solve the problem",                                 "negative"),
+        ("The system shall activate the brake when speed > 100",     "negative"),
+        ("The controller shall not allow temperature to exceed 85",  "affirmative"),
+    ]
+
+    print("=" * 60)
+    print("  spaCy Sentence Negation Tool")
+    print("=" * 60)
+
+    for sentence, task in examples:
+        result = convert(sentence, task)
+        tag = "➖ NEGATE" if task == "negative" else "➕ AFFIRM"
+        print(f"\n  {tag}")
+        print(f"  Input  : {sentence}")
+        print(f"  Output : {result}")
+        print(f"  {'─' * 54}")
+
+    # Interactive
+    print("\n  INTERACTIVE MODE (type 'q' to quit)")
+    while True:
+        s = input("\n  Sentence : ").strip()
+        if s.lower() == 'q' or not s:
+            break
+        t = input("  Task (negative/affirmative) [default: negative] : ").strip() or "negative"
+        print(f"  Output   : {convert(s, t)}")
+
+
+
+-------------------------------=-------------------------------------------------------------------------------------
+"""
+MBD Requirement Negation Tool (spaCy-based)
+============================================
+Negates MATLAB/Simulink "shall" statements and generates:
+  1. Negated statement
+  2. Test cases (fault injection)
+  3. Formal properties (LTL/MTL for SLDV)
+
+Install dependencies:
+    pip install spacy
+    python -m spacy download en_core_web_sm
+"""
+
+import re
+import sys
+from dataclasses import dataclass, field
+from typing import List
+
+# ── Try importing spaCy ──────────────────────────────────────────────
+try:
+    import spacy
+    nlp = spacy.load("en_core_web_sm")
+    SPACY_AVAILABLE = True
+except (ImportError, OSError):
+    SPACY_AVAILABLE = False
+    print("[WARNING] spaCy not available — falling back to rule-based mode.\n"
+          "Install with:  pip install spacy && python -m spacy download en_core_web_sm\n")
+
+
+# ─────────────────────────────────────────────────────────────────────
+# DATA STRUCTURES
+# ─────────────────────────────────────────────────────────────────────
+
+@dataclass
+class Requirement:
+    id:   str
+    text: str
+
+@dataclass
+class NegationResult:
+    req_id:                  str
+    original:                str
+    req_type:                str
+    negated_statement:       str
+    test_cases:              List[str] = field(default_factory=list)
+    falsification_props:     List[str] = field(default_factory=list)
+
+
+# ─────────────────────────────────────────────────────────────────────
+# CLASSIFIER
+# ─────────────────────────────────────────────────────────────────────
+
+TEMPORAL_KW    = ["always", "never", "eventually", "until", "whenever",
+                  "at all times", "continuously", "at any time"]
+CONDITIONAL_KW = ["if", "when", "unless", "provided that", "in case",
+                  "whenever", "upon"]
+THRESHOLD_PAT  = re.compile(
+    r"(greater than|less than|equal to|above|below|exceed[s]?|"
+    r"within|between|at least|at most|no more than|no less than|"
+    r"drop below|rise above|fall below)", re.IGNORECASE)
+
+def classify(text: str) -> str:
+    tl = text.lower()
+    if any(k in tl for k in TEMPORAL_KW):    return "temporal"
+    if any(k in tl for k in CONDITIONAL_KW): return "conditional"
+    if THRESHOLD_PAT.search(tl):             return "threshold"
+    if "shall not" in tl:                    return "prohibition"
+    return "general"
+
+
+# ─────────────────────────────────────────────────────────────────────
+# NEGATION — spaCy-powered
+# ─────────────────────────────────────────────────────────────────────
+
+SHALL_NOT_RE = re.compile(r'\bshall\s+not\b', re.IGNORECASE)
+SHALL_RE     = re.compile(r'\bshall\b',       re.IGNORECASE)
+
+AUX_MAP = {
+    "is":"is not","are":"are not","was":"was not","were":"were not",
+    "has":"has not","have":"have not","had":"had not",
+    "can":"cannot","could":"could not","will":"will not",
+    "would":"would not","may":"may not","might":"might not",
+    "should":"should not","must":"must not",
+}
+
+def negate_with_spacy(text: str) -> str:
+    """Use spaCy dependency parse to find the root verb and insert negation."""
+    doc = nlp(text)
+    tokens = [t.text_with_ws for t in doc]
+
+    # Find 'shall' token and insert 'not' after it
+    for i, tok in enumerate(doc):
+        if tok.text.lower() == "shall":
+            # Check next token isn't already 'not'
+            if i + 1 < len(doc) and doc[i+1].text.lower() == "not":
+                # Already negated → remove 'not'
+                tokens[i+1] = doc[i+1].whitespace_  # collapse to whitespace only
+                return "".join(tokens).strip()
+            else:
+                # Insert 'not ' after shall
+                tokens[i] = tok.text + " not"
+                return "".join(tokens).strip()
+
+    # Fallback: flip aux verbs
+    for i, tok in enumerate(doc):
+        lw = tok.text.lower()
+        if lw in AUX_MAP:
+            tokens[i] = AUX_MAP[lw] + tok.whitespace_
+            return "".join(tokens).strip()
+
+    return f"It is NOT the case that: {text}"
+
+
+def negate_rule_based(text: str) -> str:
+    """Pure regex fallback when spaCy is unavailable."""
+    if SHALL_NOT_RE.search(text):
+        return SHALL_NOT_RE.sub("shall", text, count=1)
+    if SHALL_RE.search(text):
+        return SHALL_RE.sub("shall not", text, count=1)
+    words = text.split()
+    for i, w in enumerate(words):
+        lw = w.rstrip(".,;").lower()
+        if lw in AUX_MAP:
+            words[i] = AUX_MAP[lw] + w[len(lw):]
+            return " ".join(words)
+    return f"It is NOT the case that: {text}"
+
+
+def negate(text: str) -> str:
+    if SPACY_AVAILABLE:
+        return negate_with_spacy(text)
+    return negate_rule_based(text)
+
+
+# ─────────────────────────────────────────────────────────────────────
+# TEST CASE GENERATOR
+# ─────────────────────────────────────────────────────────────────────
+
+def generate_test_cases(original: str, negated: str, req_type: str) -> List[str]:
+    tcs = [
+        f"TC-01 [Fault Injection ] : Force system into state: \"{negated}\"",
+        f"TC-02 [Boundary Value  ] : Test at exact boundary condition of original requirement.",
+        f"TC-03 [Stress Test     ] : Max load — verify original requirement still holds.",
+        f"TC-04 [Regression      ] : Confirm fix after fault — system reverts to: \"{original}\"",
+    ]
+    if req_type == "temporal":
+        tcs.append("TC-05 [Timing Fault    ] : Inject delay/jitter to break temporal constraint.")
+    if req_type == "threshold":
+        tcs.append("TC-05 [Out-of-Range    ] : Inject signal value just outside defined threshold.")
+    if req_type == "conditional":
+        tcs.append("TC-05 [Condition Flip  ] : Force condition TRUE when normally FALSE and vice versa.")
+    if req_type == "prohibition":
+        tcs.append("TC-05 [Violation Inject] : Trigger prohibited state through unexpected state combination.")
+    return tcs
+
+
+# ─────────────────────────────────────────────────────────────────────
+# FORMAL PROPERTY GENERATOR (LTL / MTL for SLDV)
+# ─────────────────────────────────────────────────────────────────────
+
+def generate_formal_props(original: str, negated: str, req_type: str) -> List[str]:
+    # Extract a short label from original
+    label = original[:60].rstrip() + ("..." if len(original) > 60 else "")
+
+    props = [
+        f"PROP-01 [LTL Safety     ] : G( NOT( violation ) )",
+        f"             → Globally, negated condition must never hold.",
+        f"PROP-02 [Reachability   ] : EF( violation_state )",
+        f"             → Check: can model ever reach a state violating \"{label}\"?",
+        f"PROP-03 [MTL            ] : G[0,T]( system satisfies original requirement )",
+        f"             → Over all time steps T, original requirement must hold.",
+    ]
+    if req_type == "temporal":
+        props.append("PROP-04 [LTL Liveness  ] : F( violation ) — find trace where violation eventually occurs.")
+    if req_type == "threshold":
+        props.append("PROP-04 [Quantitative  ] : Minimize/maximize signal to find threshold crossing point.")
+    if req_type == "conditional":
+        props.append("PROP-04 [Implication   ] : G( condition → response ) — if condition holds, response must follow.")
+    return props
+
+
+# ─────────────────────────────────────────────────────────────────────
+# MAIN PROCESSOR
+# ─────────────────────────────────────────────────────────────────────
+
+def process(req: Requirement) -> NegationResult:
+    text     = req.text.strip()
+    rtype    = classify(text)
+    negated  = negate(text)
+    tcs      = generate_test_cases(text, negated, rtype)
+    props    = generate_formal_props(text, negated, rtype)
+    return NegationResult(
+        req_id               = req.id,
+        original             = text,
+        req_type             = rtype,
+        negated_statement    = negated,
+        test_cases           = tcs,
+        falsification_props  = props,
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────
+# REPORT PRINTER
+# ─────────────────────────────────────────────────────────────────────
+
+SEP  = "=" * 72
+DASH = "-" * 72
+
+def print_report(r: NegationResult):
+    print(f"\n{SEP}")
+    print(f"  ID   : {r.req_id}   |   TYPE: {r.req_type.upper()}")
+    print(SEP)
+    print(f"\n  📌  ORIGINAL  : {r.original}")
+    print(f"\n  🔴  NEGATED   : {r.negated_statement}")
+
+    print(f"\n{DASH}")
+    print("  🧪  FAULT INJECTION TEST CASES")
+    print(DASH)
+    for tc in r.test_cases:
+        print(f"    • {tc}")
+
+    print(f"\n{DASH}")
+    print("  🔍  FORMAL FALSIFICATION PROPERTIES  (Simulink Design Verifier / SPIN)")
+    print(DASH)
+    for p in r.falsification_props:
+        print(f"    {p}")
+
+    print(f"\n{SEP}\n")
+
+
+# ─────────────────────────────────────────────────────────────────────
+# ENTRY POINT
+# ─────────────────────────────────────────────────────────────────────
+
+DEMO_REQUIREMENTS = [
+    Requirement("REQ-001", "The system shall activate the brake when engine speed exceeds 3000 RPM."),
+    Requirement("REQ-002", "The controller shall not allow output voltage to drop below 12V."),
+    Requirement("REQ-003", "The system shall always maintain hydraulic pressure above 50 bar."),
+    Requirement("REQ-004", "If the sensor signal is lost, the ECU shall switch to safe mode within 100ms."),
+]
+
+if __name__ == "__main__":
+    engine = "spaCy" if SPACY_AVAILABLE else "Rule-Based"
+    print("\n" + "★" * 72)
+    print(f"   MBD REQUIREMENT NEGATION TOOL  |  Engine: {engine}")
+    print("   Outputs: Negated Statement · Test Cases · Formal Properties")
+    print("★" * 72)
+
+    # ── Demo mode ─────────────────────────────────────────────────────
+    print("\n[DEMO — 4 sample Simulink requirements]\n")
+    for req in DEMO_REQUIREMENTS:
+        print_report(process(req))
+
+    # ── Interactive mode ───────────────────────────────────────────────
+    print(DASH)
+    print("  INTERACTIVE MODE")
+    print(DASH)
+    print("  Enter your MATLAB/Simulink requirement (or 'q' to quit)")
+    idx = 1
+    while True:
+        try:
+            user_input = input(f"\n  REQ-USR-{idx:03d} > ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\n  [Exiting]")
+            break
+        if not user_input or user_input.lower() == 'q':
+            print("  [Done]")
+            break
+        req = Requirement(f"REQ-USR-{idx:03d}", user_input)
+        print_report(process(req))
+        idx += 1
