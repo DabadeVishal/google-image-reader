@@ -1,0 +1,10 @@
+from xml.sax.saxutils import escape
+
+nodes = [
+    ("n1","Build button clicked in VS\nCode extension send\nproject name", 530, 20, 250, 90, "rect"),
+    ("n2","Fetch all files from server\nsegregate by project name", 530, 150, 250, 70, "rect"),
+    ("n3","Receive filename, filepath", 550, 260, 210, 50, "rect"),
+    ("n4","Process each file one by\none", 530, 350, 250, 70, "rect"),
+    ("n5","Send filename and filepath\nto the server", 530, 470, 250, 70, "rect"),
+    ("n6","Get line, line index,\npatch, and S3 embedding\npath", 530, 600, 250, 90, "rect"),
+    ("d1","File exists in current\nworkspace?", 470, 760
